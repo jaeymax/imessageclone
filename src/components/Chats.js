@@ -5,6 +5,7 @@ import {useContext} from 'react'
 import {AppContext} from '../context/appContext'
 import {collection, doc, getDocs, onSnapshot, query, where} from 'firebase/firestore'
 import { auth, db } from '../firebase';
+import Spinner from './Spinner';
 
 
 
@@ -44,9 +45,7 @@ const Chats = () => {
 
   if(loading){
     return (
-      <div style={{width:'100%', height:'100vh', display:'flex', alignItems:'center', 'justifyContent':'center'}} >
-      <h3>Loading...</h3>
-    </div>
+     <Spinner/>
     )
   }
   

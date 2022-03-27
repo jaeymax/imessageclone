@@ -7,6 +7,7 @@ import {Send} from '@mui/icons-material'
 import {useParams} from 'react-router-dom';
 import {getDoc, doc, collection, orderBy, query, addDoc, serverTimestamp, updateDoc, onSnapshot} from 'firebase/firestore';
 import {db, auth} from '../firebase';
+import Spinner from './Spinner';
 
 const ChatRoom = () => {
 
@@ -15,6 +16,7 @@ const ChatRoom = () => {
   const [message, setMessage] = React.useState('');
   const [messages, setMessages] = React.useState([]);
   const [roomReciever, setRoomReciever] = React.useState({});
+  const scrollRef = React.useRef(null);
   const [loading, setLoading] = React.useState(true);
 
   const sendMessage = async () => {
@@ -50,6 +52,7 @@ const ChatRoom = () => {
           ...doc.data()
         }
       )))
+     // scrollRef.current.scrollBottom;
     })
     return () => unsub();
   },[])
@@ -79,9 +82,7 @@ const ChatRoom = () => {
 
   if(loading){
     return (
-    <div style={{width:'100%', height:'100vh', display:'flex', alignItems:'center', 'justifyContent':'center'}} >
-      <h3>Loading...</h3>
-    </div>
+      <Spinner/>
     )
   }
 
@@ -89,7 +90,7 @@ const ChatRoom = () => {
     <div className = 'chat__room__wrapper'>
     <StatusBar photoUrl={roomReciever.photoUrl} isOnline = {roomReciever.isOnline} roomName = {roomReciever.displayName} lastSeen = {roomReciever.lastSeen} />
     <div className='chat__room'>
-        <div className='chat__messages' >
+        <div className='chat__messages' ref = {scrollRef} >
               {messages.map((message)=><ChatMessage chatId = {id} key = {message.id} id = {message.id} read ={message.read} message = {message.body} timeStamp = {message.timeStamp} to ={message.to} from = {message.from} />) }
             
         </div>

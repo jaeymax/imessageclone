@@ -4,6 +4,7 @@ import {useNavigate} from 'react-router-dom'
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Moment from 'react-moment'
+import Spinner from './Spinner';
 
 
 const Chat = ({timeStamp, reciever, lastMessage ,unreadMessages, id}) => {
@@ -28,9 +29,7 @@ const Chat = ({timeStamp, reciever, lastMessage ,unreadMessages, id}) => {
   }
 
   if(loading){
-      return  <div style={{width:'100%', height:'100vh', display:'flex', alignItems:'center', 'justifyContent':'center'}} >
-      <h3>Loading...</h3>
-    </div>
+     return <Spinner/>
   }
 
   return (
