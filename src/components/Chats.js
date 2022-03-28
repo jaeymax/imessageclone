@@ -19,6 +19,7 @@ const Chats = () => {
     const unsub = onSnapshot(query(collection(db, 'chats'), where('users', 'array-contains',auth.currentUser.uid)), snapShot=>{
       //Get only the chats with a last message
       const chatsWithLastMessage = snapShot.docs.filter(doc=>doc.data().lastMessage != null);
+      console.log(chatsWithLastMessage);
       
       
       const  chts = []
@@ -29,10 +30,10 @@ const Chats = () => {
           const len = querySnapShot.docs.filter(doc => doc.data().to === auth.currentUser.uid).length;
           chts.push({...docc.data(), id:docc.id, reciever:docc.data().users[0] == auth.currentUser.uid? docc.data().users[1] : docc.data().users[0], unreadMessages:len})
           setChats(chts);
-          setLoading(false);
-
-      })
-
+          
+        })
+        
+        setLoading(false);
       
           
     })
