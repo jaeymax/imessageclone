@@ -51,8 +51,8 @@ const ChatRoom = () => {
           id:doc.id,
           ...doc.data()
         }
-      )))
-     // scrollRef.current.scrollBottom;
+      )));
+    // scrollRef.current.scrollIntoView({behaviour:'smooth'});
     })
     return () => unsub();
   },[])
@@ -87,14 +87,15 @@ const ChatRoom = () => {
   }
 
   return (
-    <div className = 'chat__room__wrapper'>
+    <div className = 'chat__room'>
     <StatusBar photoUrl={roomReciever.photoUrl} isOnline = {roomReciever.isOnline} roomName = {roomReciever.displayName} lastSeen = {roomReciever.lastSeen} />
-    <div className='chat__room'>
+    {/* <div className='chat__room'> */}
         <div className='chat__messages' ref = {scrollRef} >
               {messages.map((message)=><ChatMessage chatId = {id} key = {message.id} id = {message.id} read ={message.read} message = {message.body} timeStamp = {message.timeStamp} to ={message.to} from = {message.from} />) }
             
         </div>
-        <div className='chats__bottom' >
+    {/* </div> */}
+      <div className='chats__bottom' >
           <input placeholder='Message' className='chats__input' value = {message} onChange = {(e)=>setMessage(e.target.value)} />
           <div className = 'chats__mike' >
             <IconButton onClick = {sendMessage} >
@@ -103,7 +104,6 @@ const ChatRoom = () => {
             </IconButton>
           </div>
         </div>
-    </div>
     </div>
   )
 }
