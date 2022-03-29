@@ -4,7 +4,7 @@ import { auth, db } from '../firebase'
 import Moment from 'react-moment';
 
 
-const ChatMessage = ({message, chatId, messageId, read, fromId, toId, toName, timeStamp}) => {
+const ChatMessage = ({message, chatId, messageId, read, fromId, toId, name, timeStamp}) => {
   
 
   useEffect(async()=>{
@@ -23,7 +23,7 @@ const ChatMessage = ({message, chatId, messageId, read, fromId, toId, toName, ti
 
   return (
     <div className= {fromId === auth.currentUser.uid ?'chat__message sent':'chat__message recieved'} >
-        <h5 className='chat__message__sender__name' >{toName}</h5>
+        <h5 className='chat__message__sender__name' >{name}</h5>
         <p className = 'chat__message__body' >{message}</p>
 
         <span className='chat__message__timestamp' >

@@ -104,7 +104,7 @@ const ChatRoom = () => {
     <StatusBar photoUrl={roomReciever.photoUrl} isOnline = {roomReciever.isOnline} roomName = {roomReciever.displayName} lastSeen = {roomReciever.lastSeen} />
     
         <div className='chat__messages' ref = {scrollRef} >
-              {messages.map((message)=><ChatMessage chatId = {id} key = {message.id} messageId = {message.id} read ={message.read} message = {message.body} timeStamp = {message.timeStamp} toId ={message.to.uid} toName = {message.to.displayName} fromId = {message.from.uid} />) }
+              {messages.map((message)=><ChatMessage chatId = {id} key = {message.id} messageId = {message.id} read ={message.read} message = {message.body} timeStamp = {message.timeStamp} toId ={message.to.uid} name = {message.from.displayName} fromId = {message.from.uid} />) }
             
         </div>
       <div className='chats__bottom' >
