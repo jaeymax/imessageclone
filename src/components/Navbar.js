@@ -1,8 +1,8 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
 import { signOut } from "firebase/auth";
-import { updateDoc, doc, serverTimestamp } from "firebase/firestore";
+import { updateDoc, collection, doc, getDocs, query, where, serverTimestamp } from "firebase/firestore";
 
 import More from '@material-ui/icons/MoreVertOutlined'
 import Search from '@material-ui/icons/Search'
@@ -13,10 +13,31 @@ import { AppContext } from "../context/appContext";
 
 const Navbar = () => {
 
-  const chatsRef = React.useRef(null);
-  const statusRef = React.useRef(null);
-  const callsRef = React.useRef(null);
+  const chatsRef = useRef(null);
+  const statusRef = useRef(null);
+  const callsRef = useRef(null);
+  const [numOfChats, setNumChats] = useState(0);
 
+
+  useEffect(()=>{
+    getChatsNum();
+  },[])
+
+  const getChatsNum = async () =>{
+    try{
+      const q = query(collection(db, 'chats'), where('users', 'array-contains', auth.currentUser.uid));
+      const querySnap = await getDocs(q);
+
+      const chatsWithLastMessage = querySnap.docs.filter(doc => doc.data().lastMessage != null);
+      const b = chatsWithLastMessage.filter((doc => doc.data().lastMessage.read === false));
+      const unreadChatsLen = b.filter(chat => chat.data().lastMessage.to.uid === auth.currentUser.uid).length;
+      setNumChats(unreadChatsLen);
+
+    }catch(error){
+      console.log(error);
+    }
+
+  }
 
   
   const {theme, toggleTheme, showMoreMenu, setShowMoreMenu} = useContext(AppContext);
@@ -103,7 +124,7 @@ const Navbar = () => {
 
         <div className = 'navbar__bottom' >
             <h4 ref = {chatsRef} className = 'navbar__menu active' onClick={handleChats} style = {{display:'flex', alignItems:'center'}} >
-                Chats <span style = {{marginLeft:'5px'}} >9</span>
+                Chats {numOfChats>0?(<span style = {{marginLeft:'5px'}} >{numOfChats}</span>):('')}
             </h4>
             <h4 ref={statusRef} className = 'navbar__menu' onClick = {handleStatus} >
                 Status

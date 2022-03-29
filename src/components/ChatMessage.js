@@ -4,33 +4,30 @@ import { auth, db } from '../firebase'
 import Moment from 'react-moment';
 
 
-const ChatMessage = ({message, chatId, id, read, from, to, timeStamp}) => {
-
-  const [userName, setUserName] = useState(null);
+const ChatMessage = ({message, chatId, messageId, read, fromId, toId, toName, timeStamp}) => {
   
-  useEffect(async()=>{
-       const docRef = doc(db, 'users', from);
-       const docData = await getDoc(docRef);
-       setUserName(docData.data().displayName);
-     
-  },[])
 
   useEffect(async()=>{
-      const messageRef = doc(doc(db, 'chats', chatId), 'messages', id);
-  
-      if(!read && to === auth.currentUser.uid){
-        console.log('yes')
+      const chatRef = doc(db, 'chats', chatId);
+      const messageRef = doc(doc(db, 'chats', chatId), 'messages', messageId);
+
+      if(!read && toId === auth.currentUser.uid){
         await updateDoc(messageRef, {read:true});
+        const chat = await getDoc(chatRef);
+        if(chat.data().lastMessage.id == messageId){
+          await updateDoc(chatRef, {lastMessage:{...chat.data().lastMessage, read:true}});
+        }
       }
   },[])
   
 
   return (
-    <div className= {from === auth.currentUser.uid ?'chat__message sent':'chat__message recieved'} >
-        <h5 className='chat__message__sender__name' >{userName}</h5>
+    <div className= {fromId === auth.currentUser.uid ?'chat__message sent':'chat__message recieved'} >
+        <h5 className='chat__message__sender__name' >{toName}</h5>
         <p className = 'chat__message__body' >{message}</p>
+
         <span className='chat__message__timestamp' >
-          <p><Moment format='h:mma' >{timeStamp?timeStamp.toDate():''}</Moment></p>
+          {timeStamp?(<p><Moment format='h:mma' >{timeStamp.toDate()}</Moment></p>):('')}
         </span>
     </div>
   )

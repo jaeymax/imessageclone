@@ -15,7 +15,8 @@ const ChatRoom = () => {
   
   const [message, setMessage] = React.useState('');
   const [messages, setMessages] = React.useState([]);
-  const [roomReciever, setRoomReciever] = React.useState({});
+  const [roomReciever, setRoomReciever] = React.useState(null);
+  const [currentUser, setCurrentUser] = React.useState(null);
   const scrollRef = React.useRef(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -23,25 +24,26 @@ const ChatRoom = () => {
       if(!message)return;
       const messagesRef = collection(doc(db, 'chats', id), 'messages');
       const msg =  {
-        from:auth.currentUser.uid,
-        to: roomReciever.uid,
+        from: {uid: currentUser.uid, displayName: currentUser.displayName},
+        to: {uid:roomReciever.uid, displayName:roomReciever.displayName},
         read:false,
         body:message,
         timeStamp:serverTimestamp(),
       }
       setMessage('');
-      await addDoc(messagesRef, msg);
-      updateLastMessage(msg);
+      const msgRef = await addDoc(messagesRef, msg);
+      msg.id = msgRef.id;
+      const chatRef = doc(db, 'chats', id);
+      await updateDoc(chatRef, {lastMessage:msg});
+      scrollRef.current.scrollIntoView({behaviour:'smooth'});
   }
 
-  const updateLastMessage = async (message) =>{
-     const chatRef = doc(db, 'chats', id);
-     await updateDoc(chatRef, {lastMessage:message});
-  }
+
   
 
   React.useEffect(()=>{
-    getUser(); 
+    getCurrentUser();
+    getRoomReciever();
   },[])
 
   React.useEffect(()=>{
@@ -52,33 +54,44 @@ const ChatRoom = () => {
           ...doc.data()
         }
       )));
-    // scrollRef.current.scrollIntoView({behaviour:'smooth'});
+    
     })
     return () => unsub();
   },[])
 
 
-  const getUser = async () => {
+
+
+  const getRoomReciever = async () => {
 
     try{
-        const chatRef = doc(db, 'chats', id);
-        let chat = await getDoc(chatRef);
-        chat = chat.data();
-        const chatUsers = chat.users;
-        const reciever = chatUsers[0] == auth.currentUser.uid?chatUsers[1]:chatUsers[0];
-
-        const userRef = doc(db, 'users', reciever);
-        let user = await getDoc(userRef);
-        user = user.data();
-        setRoomReciever(user);
        
-        setLoading(false);
+      const chatRef = doc(db, 'chats', id);
+      const chat = await getDoc(chatRef);
+      const users = chat.data().users;
+      const recieverId = users[0] === auth.currentUser.uid? users[1]: users[0]
+      const userRef = doc(db, 'users', recieverId);
+      const user = await getDoc(userRef);
+      setRoomReciever(user.data());
+      setLoading(false);
        
       }catch(error){
           console.log(error);
-      }
-      
+      }   
   }
+
+  const getCurrentUser = async () =>{
+
+    try{
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      const user = await getDoc(userRef);
+      setCurrentUser(user.data());
+
+    }catch(error){
+      console.log(error);
+    }
+  }
+
 
   if(loading){
     return (
@@ -89,12 +102,11 @@ const ChatRoom = () => {
   return (
     <div className = 'chat__room'>
     <StatusBar photoUrl={roomReciever.photoUrl} isOnline = {roomReciever.isOnline} roomName = {roomReciever.displayName} lastSeen = {roomReciever.lastSeen} />
-    {/* <div className='chat__room'> */}
+    
         <div className='chat__messages' ref = {scrollRef} >
-              {messages.map((message)=><ChatMessage chatId = {id} key = {message.id} id = {message.id} read ={message.read} message = {message.body} timeStamp = {message.timeStamp} to ={message.to} from = {message.from} />) }
+              {messages.map((message)=><ChatMessage chatId = {id} key = {message.id} messageId = {message.id} read ={message.read} message = {message.body} timeStamp = {message.timeStamp} toId ={message.to.uid} toName = {message.to.displayName} fromId = {message.from.uid} />) }
             
         </div>
-    {/* </div> */}
       <div className='chats__bottom' >
           <input placeholder='Message' className='chats__input' value = {message} onChange = {(e)=>setMessage(e.target.value)} />
           <div className = 'chats__mike' >
