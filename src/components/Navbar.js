@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
 import { signOut } from "firebase/auth";
-import { updateDoc, collection, doc, getDocs, query, where, serverTimestamp } from "firebase/firestore";
+import { updateDoc, collection, doc, onSnapshot, query, where, serverTimestamp } from "firebase/firestore";
 
 import More from '@material-ui/icons/MoreVertOutlined'
 import Search from '@material-ui/icons/Search'
@@ -20,24 +20,18 @@ const Navbar = () => {
 
 
   useEffect(()=>{
-    getChatsNum();
-  },[])
-
-  const getChatsNum = async () =>{
-    try{
-      const q = query(collection(db, 'chats'), where('users', 'array-contains', auth.currentUser.uid));
-      const querySnap = await getDocs(q);
-
+    const unsub = onSnapshot(query(collection(db, 'chats'), where('users', 'array-contains', auth.currentUser.uid)), querySnap =>{
       const chatsWithLastMessage = querySnap.docs.filter(doc => doc.data().lastMessage != null);
       const b = chatsWithLastMessage.filter((doc => doc.data().lastMessage.read === false));
       const unreadChatsLen = b.filter(chat => chat.data().lastMessage.to.uid === auth.currentUser.uid).length;
       setNumChats(unreadChatsLen);
 
-    }catch(error){
-      console.log(error);
-    }
+    });
 
-  }
+
+    return () => unsub();
+  },[])
+
 
   
   const {theme, toggleTheme, showMoreMenu, setShowMoreMenu} = useContext(AppContext);
